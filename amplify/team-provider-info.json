@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-expensetracker-dev-6e13f-authRole",
+      "UnauthRoleArn": "arn:aws:iam::585968684576:role/amplify-expensetracker-dev-6e13f-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::585968684576:role/amplify-expensetracker-dev-6e13f-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-expensetracker-dev-6e13f-deployment",
+      "UnauthRoleName": "amplify-expensetracker-dev-6e13f-unauthRole",
+      "StackName": "amplify-expensetracker-dev-6e13f",
+      "StackId": "arn:aws:cloudformation:us-east-1:585968684576:stack/amplify-expensetracker-dev-6e13f/fe2b96c0-649c-11ef-9c97-128b6920b79b",
+      "AmplifyAppId": "d1bqawaswh5ruy"
+    },
+    "categories": {
+      "api": {
+        "expensetracker": {}
+      }
+    }
+  }
+}

@@ -11,69 +11,63 @@ import {
   Divider,
 } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
+import { DataStore } from '@aws-amplify/datastore';
 import "@aws-amplify/ui-react/styles.css";
-import { generateClient } from "aws-amplify/data";
+import { Expense } from './models';
 import outputs from "../amplify_outputs.json";
 
 Amplify.configure(outputs);
-const client = generateClient({
-  authMode: "userPool",
-});
 
 export default function App() {
   const [expenses, setExpenses] = useState([]);
-  const [clientReady, setClientReady] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Checking client models are ready
-    if (client && client.models && client.models.Expense && client.models.Expense.observeQuery) {
-      setClientReady(true);
-    } else {
-      console.error('Client or models are not defined or incomplete');
-      setError('Client or models are not defined or incomplete');
-    }
-  }, []);
+    const fetchExpenses = async () => {
+      try {
+        const expenses = await DataStore.query(Expense);
+        console.log('Expenses:', expenses);
+        setExpenses(expenses);
+      } catch (err) {
+        console.error('Error querying Expenses:', err);
+        setError('Error querying Expenses');
+      }
+    };
 
-  useEffect(() => {
-    if (clientReady) {
-      const subscription = client.models.Expense.observeQuery().subscribe({
-        next: (data) => setExpenses([...data.items]),
-        error: (err) => {
-          console.error("Failed to fetch expenses:", err);
-          setError("Failed to fetch expenses");
-        },
-      });
-      return () => subscription.unsubscribe();
-    }
-  }, [clientReady]);
+    fetchExpenses();
+  }, []);
 
   async function createExpense(event) {
     event.preventDefault();
+    console.log("INFO", event.target);
     const form = new FormData(event.target);
-    if (clientReady) {
-      try {
-        await client.models.Expense.create({
+    try {
+      await DataStore.save(
+        new Expense({
           name: form.get("name"),
-          amount: form.get("amount"),
-        });
-        event.target.reset();
-      } catch (err) {
-        console.error("Error creating expense:", err);
-        setError("Error creating expense");
-      }
+          amount: parseFloat(form.get("amount")),
+        })
+      );
+      event.target.reset();
+      // Fetch expenses again to update the list
+      const expenses = await DataStore.query(Expense);
+      setExpenses(expenses);
+    } catch (err) {
+      console.error("Error creating expense:", err);
+      setError("Error creating expense");
     }
   }
 
-  async function deleteExpense({ id }) {
-    if (clientReady) {
-      try {
-        const toBeDeletedExpense = { id };
-        await client.models.Expense.delete(toBeDeletedExpense);
-      } catch (err) {
-        console.error("Error deleting expense:", err);
-        setError("Error deleting expense");
-      }
+  async function deleteExpense(expense) {
+    try {
+      await DataStore.delete(expense);
+      // Fetch expenses again to update the list
+      const expenses = await DataStore.query(Expense);
+      console.log(expenses)
+      setExpenses(expenses);
+    } catch (err) {
+      console.error("Error deleting expense:", err);
+      setError("Error deleting expense");
     }
   }
 
